@@ -1,4 +1,3 @@
-// src/modules/auth/auth.controller.ts
 import type { Response, NextFunction } from "express";
 import type { AuthRequest } from "../../middlewares/authenticate.js";
 import { registerUser, loginUser } from "./auth.service.js";

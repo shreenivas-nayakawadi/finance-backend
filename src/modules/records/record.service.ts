@@ -1,9 +1,9 @@
-// src/modules/records/record.service.ts
 import { prisma } from "../../config/prisma.js";
 import { RecordType } from "@prisma/client";
 import { AppError } from "../../utils/AppError.js";
 
 export interface RecordFilters {
+  search?: string;
   type?: RecordType;
   category?: string;
   from?: string;
@@ -13,7 +13,7 @@ export interface RecordFilters {
 }
 
 export const getRecords = async (filters: RecordFilters) => {
-  const { type, category, from, to, page = 1, limit = 20 } = filters;
+  const { search, type, category, from, to, page = 1, limit = 20 } = filters;
   const where: any = { isDeleted: false };
   if (type) where.type = type;
   if (category) where.category = { contains: category, mode: "insensitive" };
@@ -22,17 +22,58 @@ export const getRecords = async (filters: RecordFilters) => {
     if (from) where.date.gte = new Date(from);
     if (to) where.date.lte = new Date(to);
   }
-  const [total, records] = await Promise.all([
-    prisma.record.count({ where }),
-    prisma.record.findMany({
-      where,
-      skip: (page - 1) * limit,
-      take: limit,
-      orderBy: { date: "desc" },
-      include: { createdBy: { select: { id: true, name: true } } },
-    }),
-  ]);
-  return { records, total, page, limit, totalPages: Math.ceil(total / limit) };
+
+  if (!search) {
+    const [total, records] = await Promise.all([
+      prisma.record.count({ where }),
+      prisma.record.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { date: "desc" },
+        include: { createdBy: { select: { id: true, name: true } } },
+      }),
+    ]);
+    return {
+      records,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  let regex: RegExp;
+  try {
+    regex = new RegExp(search, "i");
+  } catch {
+    throw new AppError("Invalid regex pattern for search", 400);
+  }
+
+  const allRecords = await prisma.record.findMany({
+    where,
+    orderBy: { date: "desc" },
+    include: { createdBy: { select: { id: true, name: true } } },
+  });
+
+  const filteredRecords = allRecords.filter(
+    (record) =>
+      regex.test(record.category) ||
+      regex.test(record.type) ||
+      regex.test(record.description ?? "") ||
+      regex.test(record.createdBy.name),
+  );
+
+  const total = filteredRecords.length;
+  const records = filteredRecords.slice((page - 1) * limit, page * limit);
+
+  return {
+    records,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
 };
 
 export const getRecordById = async (id: string) => {

@@ -10,7 +10,8 @@ export const listUsers = async (
   next: NextFunction,
 ) => {
   try {
-    const users = await userService.listUsers();
+    const search = req.query["search"] as string | undefined;
+    const users = await userService.listUsers(search);
     sendSuccess(res, { users }, 200, "Users fetched successfully");
   } catch (err) {
     next(err);

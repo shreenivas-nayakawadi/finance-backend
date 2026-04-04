@@ -5,6 +5,12 @@ export const recordIdParamValidator = [
 ];
 
 export const listRecordsValidator = [
+  query("search")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Search must be a non-empty string"),
   query("type")
     .optional()
     .isIn(["INCOME", "EXPENSE"])

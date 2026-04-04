@@ -1,4 +1,13 @@
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
+
+export const listUsersValidator = [
+  query("search")
+    .optional()
+    .isString()
+    .trim()
+    .notEmpty()
+    .withMessage("Search must be a non-empty string"),
+];
 
 export const userIdParamValidator = [
   param("id").isUUID().withMessage("Valid user id is required"),

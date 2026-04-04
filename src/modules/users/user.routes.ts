@@ -4,6 +4,7 @@ import { authorize } from "../../middlewares/authorize.js";
 import { validate } from "../../middlewares/validate.js";
 import * as ctrl from "./user.controller.js";
 import {
+  listUsersValidator,
   userIdParamValidator,
   updateRoleValidator,
   updateStatusValidator,
@@ -13,7 +14,7 @@ export const userRouter = Router();
 
 userRouter.use(authenticate);
 
-userRouter.get("/", authorize("ADMIN"), ctrl.listUsers);
+userRouter.get("/", authorize("ADMIN"), listUsersValidator, validate, ctrl.listUsers);
 userRouter.get(
   "/:id",
   authorize("ADMIN"),

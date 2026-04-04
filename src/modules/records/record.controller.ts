@@ -26,6 +26,9 @@ export const listRecords = async (
     if (req.query["type"]) {
       filters.type = req.query["type"] as RecordType;
     }
+    if (req.query["search"]) {
+      filters.search = req.query["search"] as string;
+    }
     if (req.query["category"]) {
       filters.category = req.query["category"] as string;
     }
