@@ -102,13 +102,17 @@ export const updateExistingRecord = async (
       description?: string;
     };
 
-    const record = await updateRecord(req.params["id"] as string, {
-      amount,
-      type,
-      category,
-      date,
-      description,
-    });
+    const updateData: Record<string, unknown> = {};
+    if (amount !== undefined) updateData.amount = amount;
+    if (type !== undefined) updateData.type = type;
+    if (category !== undefined) updateData.category = category;
+    if (date !== undefined) updateData.date = new Date(date);
+    if (description !== undefined) updateData.description = description;
+
+    const record = await updateRecord(
+      req.params["id"] as string,
+      updateData,
+    );
 
     sendSuccess(res, { record }, 200, "Record updated successfully");
   } catch (err) {

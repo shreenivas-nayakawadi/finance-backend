@@ -13,6 +13,10 @@ app.use(cors());
 app.use(express.json());
 app.use(globalLimiter);
 
+app.get("/api/health", (req, res) => {
+  res.json({ success: true, message: "Finance Backend API is running", timestamp: new Date().toISOString() });
+});
+
 app.use("/api/auth", authRouter);
 app.use("/api/users", userRouter);
 app.use("/api/records", recordRouter);
